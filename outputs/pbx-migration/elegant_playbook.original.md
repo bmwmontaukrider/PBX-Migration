@@ -1,0 +1,1 @@
+../../docs/extracted/elegant_playbook.original.md

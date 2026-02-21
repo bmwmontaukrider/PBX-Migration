@@ -1,0 +1,32 @@
+{
+  "config_version": 1,
+  "values": {
+    "mode": "both",
+    "kamailio_host": "192.0.2.30",
+    "kamailio_user": "root",
+    "kamailio_ssh_port": 22,
+    "old_pbx_ip": "192.0.2.10",
+    "new_pbx_ip": "192.0.2.20",
+    "old_pbx_host": "192.0.2.10",
+    "old_pbx_user": "root",
+    "old_pbx_ssh_port": 22,
+    "new_pbx_host": "192.0.2.20",
+    "new_pbx_user": "root",
+    "new_pbx_ssh_port": 22,
+    "ssh_key": "~/.ssh/id_ed25519",
+    "sip_scheme": "sip",
+    "sip_port": 5060,
+    "set_id": 1,
+    "dispatcher_target": "/etc/kamailio/dispatcher.list",
+    "reload_cmd": "kamcmd dispatcher.reload",
+    "remote_script_dir": "/opt/pbx-migration/scripts",
+    "remote_profile_dir": "/tmp/pbx-migration",
+    "local_artifacts_dir": "./artifacts/orchestration",
+    "capture_snapshots": true,
+    "wait_for_drain": false,
+    "drain_threshold": 0,
+    "drain_interval": 15,
+    "drain_timeout": 14400,
+    "auto_rollback": true
+  }
+}

@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Runtime logs
+*.log
+
+# Local keys / credentials
+local-lab/keys/id_*
+local-lab/keys/authorized_keys
+!local-lab/keys/.gitkeep
+
+# Generated artifacts and run outputs
+artifacts/
+local-lab/artifacts/
+local-lab/real-services/artifacts/
+
+# Optional local input files containing infrastructure details
+tooling/config/*.local.json

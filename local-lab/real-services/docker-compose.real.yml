@@ -1,0 +1,44 @@
+name: pbx-real-services-lab
+
+services:
+  kamailio-real:
+    image: kamailio/kamailio-ci:latest
+    platform: linux/amd64
+    container_name: real-kamailio
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - "mkdir -p /run/kamailio /tmp/pbx-migration /var/backups/kamailio-dispatcher && cp -f /seed/dispatcher.list /etc/kamailio/dispatcher.list && kamailio -DD -E -f /etc/kamailio/kamailio.cfg"
+    ports:
+      - "15060:5060/udp"
+    volumes:
+      - ./kamailio/kamailio.cfg:/etc/kamailio/kamailio.cfg:ro
+      - ./kamailio/dispatcher.list:/seed/dispatcher.list:ro
+      - ../../tooling/scripts:/opt/pbx-migration/scripts:ro
+
+  freeswitch-old:
+    image: safarov/freeswitch:1.10.3
+    platform: linux/amd64
+    container_name: real-fs-old
+
+  freeswitch-new:
+    image: safarov/freeswitch:1.10.12
+    platform: linux/amd64
+    container_name: real-fs-new
+
+  fusionpbx-old:
+    build:
+      context: ./fusionpbx-image
+      args:
+        FUSIONPBX_TAG: "5.3.0"
+    container_name: real-fusionpbx-old
+    ports:
+      - "18080:80"
+
+  fusionpbx-new:
+    build:
+      context: ./fusionpbx-image
+      args:
+        FUSIONPBX_TAG: "5.5.7"
+    container_name: real-fusionpbx-new
+    ports:
+      - "18081:80"

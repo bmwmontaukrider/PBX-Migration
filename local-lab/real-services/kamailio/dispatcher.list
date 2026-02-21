@@ -1,0 +1,2 @@
+# Initial dispatcher state (old-only)
+1 sip:freeswitch-old:5060 0 0 old-pbx

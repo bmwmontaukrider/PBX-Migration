@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cmd="${1:-}"
+svc="${2:-}"
+
+if [[ "$cmd" == "is-active" && "$svc" == "freeswitch" ]]; then
+  echo "active"
+  exit 0
+fi
+
+if [[ "$cmd" == "status" && "$svc" == "freeswitch" ]]; then
+  echo "freeswitch.service - Mock FreeSWITCH"
+  echo "   Loaded: loaded (/lib/systemd/system/freeswitch.service; enabled)"
+  echo "   Active: active (running)"
+  exit 0
+fi
+
+if [[ "$cmd" == "stop" && "$svc" == "freeswitch" ]]; then
+  echo "Stopped freeswitch (mock)"
+  exit 0
+fi
+
+echo "Mock systemctl: unsupported command: $*" >&2
+exit 1

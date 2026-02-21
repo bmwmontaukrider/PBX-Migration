@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+query="$*"
+if [[ "${1:-}" == "-x" ]]; then
+  query="${2:-}"
+fi
+
+role="$(cat /var/mock/role 2>/dev/null || echo mock)"
+channels="$(cat /var/mock/channels_count 2>/dev/null || echo 0)"
+regs="$(cat /var/mock/registrations_count 2>/dev/null || echo 0)"
+
+case "$query" in
+  "show channels count")
+    echo "${channels} total."
+    ;;
+  "show channels")
+    if [[ "$channels" =~ ^[0-9]+$ ]] && (( channels > 0 )); then
+      i=1
+      while (( i <= channels )); do
+        echo "uuid-${role}-${i},sofia/internal/100${i}@example.com,ACTIVE"
+        i=$((i+1))
+      done
+    else
+      echo "0 total."
+    fi
+    ;;
+  "show registrations")
+    if [[ "$regs" =~ ^[0-9]+$ ]] && (( regs > 0 )); then
+      i=1
+      while (( i <= regs )); do
+        echo "user${i}@example.com,sofia/internal,Registered"
+        i=$((i+1))
+      done
+    else
+      echo "0 total."
+    fi
+    ;;
+  "sofia status")
+    echo "Sofia Status: RUNNING (${role})"
+    ;;
+  *)
+    echo "Mock fs_cli (${role}) executed: $query"
+    ;;
+esac

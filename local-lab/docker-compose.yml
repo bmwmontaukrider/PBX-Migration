@@ -1,0 +1,45 @@
+name: pbx-migration-lab
+
+services:
+  kamailio:
+    build:
+      context: ./images/mock-host
+    container_name: lab-kamailio
+    hostname: kamailio
+    environment:
+      ROLE: kamailio
+      CHANNEL_COUNT: "0"
+      REG_COUNT: "5"
+    ports:
+      - "2221:22"
+    volumes:
+      - ./keys/authorized_keys:/seed/authorized_keys:ro
+      - ../tooling/scripts:/opt/pbx-migration/scripts:ro
+
+  old-pbx:
+    build:
+      context: ./images/mock-host
+    container_name: lab-old-pbx
+    hostname: old-pbx
+    environment:
+      ROLE: old-pbx
+      CHANNEL_COUNT: "0"
+      REG_COUNT: "30"
+    ports:
+      - "2222:22"
+    volumes:
+      - ./keys/authorized_keys:/seed/authorized_keys:ro
+
+  new-pbx:
+    build:
+      context: ./images/mock-host
+    container_name: lab-new-pbx
+    hostname: new-pbx
+    environment:
+      ROLE: new-pbx
+      CHANNEL_COUNT: "0"
+      REG_COUNT: "2"
+    ports:
+      - "2223:22"
+    volumes:
+      - ./keys/authorized_keys:/seed/authorized_keys:ro

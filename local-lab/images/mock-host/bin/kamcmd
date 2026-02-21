@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "dispatcher.reload" ]]; then
+  echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') dispatcher.reload" >> /var/mock/kamcmd.log
+  echo "dispatcher reloaded"
+  exit 0
+fi
+
+echo "kamcmd mock: unsupported command: $*" >&2
+exit 1
