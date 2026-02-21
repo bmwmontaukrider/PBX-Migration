@@ -1,0 +1,20 @@
+services:
+  sipp-uas-old:
+    image: ctaloi/sipp:latest
+    platform: linux/amd64
+    container_name: real-sipp-uas-old
+    entrypoint: ["/bin/sh", "-lc"]
+    command: ["exec sipp -sn uas -i 0.0.0.0 -p 5060 -trace_msg -message_file /tmp/old_messages.log -trace_err"]
+
+  sipp-uas-new:
+    image: ctaloi/sipp:latest
+    platform: linux/amd64
+    container_name: real-sipp-uas-new
+    entrypoint: ["/bin/sh", "-lc"]
+    command: ["exec sipp -sn uas -i 0.0.0.0 -p 5060 -trace_msg -message_file /tmp/new_messages.log -trace_err"]
+
+  sipp-uac:
+    image: ctaloi/sipp:latest
+    platform: linux/amd64
+    entrypoint: ["/bin/sh", "-lc"]
+    command: ["sleep infinity"]

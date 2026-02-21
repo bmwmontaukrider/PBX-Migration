@@ -57,8 +57,11 @@ This lab is intended to validate script mechanics end-to-end, not telephony qual
 Path:
 
 - `local-lab/real-services/docker-compose.real.yml`
+- `local-lab/real-services/docker-compose.calls.yml`
 - `local-lab/real-services/verify_versions.sh`
 - `local-lab/real-services/run_real_migration_smoke.sh`
+- `local-lab/real-services/run_call_cutover_sim.sh`
+- `local-lab/real-services/run_call_cutover_dashboard.sh`
 
 Services:
 
@@ -159,12 +162,42 @@ What this run does:
 
 This is the step that validates migration control-flow behavior. It is the closest local equivalent to an actual cutover runbook without placing live SIP calls.
 
+### D) Real-services SIP call cutover simulation (live INVITE validation)
+
+```bash
+cd "<repo-root>"
+bash "./local-lab/real-services/run_call_cutover_sim.sh"
+```
+
+What this run adds:
+
+- generates live SIP call traffic through Kamailio dispatcher
+- validates routing behavior across `old -> both -> new`
+- verifies in-flight cutover behavior with long-call + post-cutover new calls
+- emits per-phase pass/fail assertion files from backend-observed INVITE counts
+
+### E) Real-services live dashboard visualization
+
+```bash
+cd "<repo-root>"
+bash "./local-lab/real-services/run_call_cutover_dashboard.sh"
+```
+
+What this adds:
+
+- real-time terminal dashboard while simulation runs
+- live old/new backend INVITE totals
+- per-interval deltas so you can see call generation shift during cutover
+- CSV timeline artifact (`live-metrics.csv`) for post-run charting
+
 ## Artifacts produced
 
 - Mock lab orchestration artifacts:
   - `local-lab/artifacts/`
 - Optional top-level orchestration artifacts:
   - `artifacts/`
+- Real call-cutover simulation artifacts:
+  - `local-lab/real-services/artifacts/call-cutover-*`
 
 These artifacts contain dispatcher profiles and snapshot command outputs used for audit/debug.
 

@@ -41,6 +41,12 @@ It includes:
 - `tooling/scripts/apply_dispatcher_profile.sh`
   Applies a generated dispatcher profile on Kamailio and runs reload command.
 
+- `local-lab/real-services/run_call_cutover_sim.sh`
+  Runs live SIP call simulation across cutover phases and validates backend routing assertions.
+
+- `local-lab/real-services/run_call_cutover_dashboard.sh`
+  Runs the simulation and renders a live terminal dashboard of old/new call totals and deltas.
+
 ## Prerequisites
 
 1. Docker Desktop (or Docker Engine + Compose plugin)
@@ -81,6 +87,22 @@ bash "./local-lab/real-services/run_real_migration_smoke.sh"
 
 This runs staged dispatcher cutover `old -> both -> new`, reloads Kamailio each stage, and verifies final new-only state.
 
+### 4) Real Lab SIP Call Cutover Simulation (Live INVITE Traffic)
+
+```bash
+bash "./local-lab/real-services/run_call_cutover_sim.sh"
+```
+
+This executes live SIP call bursts across `old -> both -> new` and an in-flight cutover check, then asserts routing behavior from SIP backend INVITE observation logs.
+
+### 5) Real Lab Live Visualization Dashboard
+
+```bash
+bash "./local-lab/real-services/run_call_cutover_dashboard.sh"
+```
+
+This runs the cutover simulation and displays live old/new INVITE counts, phase progression, and per-interval deltas.
+
 Detailed lab guidance is in `local-lab/README.md` and `local-lab/real-services/README.md`.
 
 ## Version Check vs Migration Run
@@ -95,6 +117,15 @@ Detailed lab guidance is in `local-lab/README.md` and `local-lab/real-services/R
   - Kamailio reload is invoked after each stage
   - final dispatcher state is verified as new-only
   - run artifacts are recorded for audit/debug
+
+- `run_call_cutover_sim.sh` verifies live INVITE routing behavior:
+  - sends real SIP call traffic through Kamailio dispatcher
+  - validates destination selection in `old`, `both`, and `new` phases via backend-observed INVITE counts
+  - checks in-flight cutover behavior (long call starts on old; post-cutover calls go new)
+
+- `run_call_cutover_dashboard.sh` provides real-time visibility:
+  - shows live phase, dispatcher mode, and backend INVITE totals
+  - records timeline samples to `live-metrics.csv` for post-run visualization
 
 ## Wizard Usage
 

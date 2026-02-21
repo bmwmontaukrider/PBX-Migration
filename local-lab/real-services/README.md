@@ -20,6 +20,8 @@ Use this decision rule:
 
 - Run `verify_versions.sh` when you only want a preflight check that the old/new stacks are truly different and reachable.
 - Run `run_real_migration_smoke.sh` when you want to execute an actual staged dispatcher migration (`old -> both -> new`) and verify the final cutover state with artifacts.
+- Run `run_call_cutover_sim.sh` when you want live SIP call simulation with pass/fail routing assertions across cutover phases.
+- Run `run_call_cutover_dashboard.sh` when you want a live terminal visualization during the simulation.
 
 ## Prerequisites
 
@@ -92,6 +94,80 @@ What it does not do:
 - It does not validate production FusionPBX app/database configuration.
 - It does not replace staging/UAT call-flow validation.
 
+## 3) SIP Call Cutover Simulation (Live INVITE Traffic)
+
+Run:
+
+```bash
+bash "./local-lab/real-services/run_call_cutover_sim.sh"
+```
+
+What this script validates:
+
+1. Brings up real-services stack plus SIP simulators (`sipp-uas-old`, `sipp-uas-new`, `sipp-uac`).
+2. Applies dispatcher mode `old` and sends call burst; asserts all INVITEs route to old backend.
+3. Applies dispatcher mode `both` and sends call burst; asserts traffic reaches both backends.
+4. Applies dispatcher mode `new` and sends call burst; asserts all INVITEs route to new backend.
+5. Runs in-flight cutover check:
+   - starts a long call on old mode
+   - cuts over to new mode while call is active
+   - sends new calls and verifies post-cutover routing is new-only
+6. Writes assertion outputs and SIP message logs into artifacts.
+
+How routing is verified:
+
+- SIPp UAS containers (`old` and `new`) record raw SIP messages.
+- The script counts backend-observed `INVITE` totals per phase and asserts deltas:
+  - `old`: old delta >= expected calls, new delta == 0
+  - `both`: old delta >= 1 and new delta >= 1
+  - `new`: old delta == 0, new delta >= expected calls
+- In-flight check uses:
+  - old-mode precheck call to old backend
+  - long call completion confirmation
+  - post-cutover assertion that only new backend receives fresh calls
+
+Tuning knobs (optional env vars):
+
+- `CALLS_PER_PHASE` (default `10`)
+- `CALL_RATE` (default `5`)
+- `CALL_DURATION_MS` (default `1200`)
+- `LONG_CALL_MS` (default `25000`)
+- `POST_CUTOVER_CALLS` (default `8`)
+- `PHASE_GAP_SECONDS` (default `35`, used to avoid transaction-id reuse artifacts between phases)
+
+What this still does not prove:
+
+- RTP/media quality and one-way audio edge cases.
+- Full production dialplan or FusionPBX app logic.
+- Carrier/interconnect behavior.
+
+## 4) Live Visualization Dashboard (Real-Time)
+
+Run:
+
+```bash
+bash "./local-lab/real-services/run_call_cutover_dashboard.sh"
+```
+
+What this does:
+
+1. Starts `run_call_cutover_sim.sh` in the background.
+2. Continuously samples backend INVITE totals from:
+   - `real-sipp-uas-old` (`/tmp/old_messages.log`)
+   - `real-sipp-uas-new` (`/tmp/new_messages.log`)
+3. Displays a live dashboard with:
+   - current phase (`old`, `both`, `new`, `inflight`, etc.)
+   - inferred dispatcher mode (`old`, `both`, `new`)
+   - total INVITEs handled by old/new backends
+   - per-interval deltas (`OLD +x`, `NEW +y`)
+4. Writes a time-series CSV (`live-metrics.csv`) in the run artifact folder.
+
+Useful env vars:
+
+- `DASH_INTERVAL_SECONDS` (default `1`)
+- `DASH_NO_CLEAR=1` (disable screen clears for log capture)
+- Simulation vars still apply (`CALLS_PER_PHASE`, `PHASE_GAP_SECONDS`, etc.)
+
 ## Evidence and Verification Artifacts
 
 Each migration smoke run writes a timestamped folder:
@@ -108,6 +184,25 @@ Key files and why they matter:
 - `applied-new.list`: dispatcher file after final new profile apply (primary cutover proof).
 - `kamcmd-dispatcher.list.txt`: Kamailio runtime dispatcher listing after migration.
 
+Call-cutover simulation artifacts are written under:
+
+`./local-lab/real-services/artifacts/call-cutover-YYYYmmdd_HHMMSS/`
+
+Key files:
+
+- `old.assertions.txt`, `both.assertions.txt`, `new.assertions.txt`
+- `old.uas-old.messages.log`, `old.uas-new.messages.log`
+- `both.uas-old.messages.log`, `both.uas-new.messages.log`
+- `new.uas-old.messages.log`, `new.uas-new.messages.log`
+- `inflight.assertions.txt`
+- `inflight-precutover.uac.log`
+- `inflight-long.uac.log`
+- `inflight-post-cutover.uac.log`
+- `current_phase.txt`
+- `status.txt`
+- `simulation.stdout.log`
+- `live-metrics.csv`
+
 Manual validation commands:
 
 ```bash
@@ -120,4 +215,10 @@ bash "./local-lab/real-services/verify_versions.sh"
 
 ```bash
 PATH=/tmp/fakebin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin docker compose -f "./local-lab/real-services/docker-compose.real.yml" down -v
+```
+
+If you used call simulation, stop with both files:
+
+```bash
+PATH=/tmp/fakebin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin docker compose -f "./local-lab/real-services/docker-compose.real.yml" -f "./local-lab/real-services/docker-compose.calls.yml" down -v
 ```
