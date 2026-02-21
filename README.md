@@ -4,7 +4,7 @@ This repository provides migration runbooks and automation for moving SIP traffi
 
 It includes:
 
-- migration documentation (source, extracted, revised)
+- migration documentation (revised playbook in `.md` and `.docx`)
 - CLI orchestration scripts for dispatcher cutover over SSH
 - an interactive wizard for collecting/validating migration inputs
 - two local labs:
@@ -14,9 +14,8 @@ It includes:
 ## Repository Structure
 
 - `docs/`
-  - `source/` original source document(s)
-  - `extracted/` extracted markdown references
-  - `revised/` revised migration playbook outputs
+  - `FusionPBX_FreeSWITCH_Kamailio_Migration_Playbook_Revised.md`
+  - `FusionPBX_FreeSWITCH_Kamailio_Migration_Playbook_Revised.docx`
 - `tooling/`
   - `scripts/` canonical automation scripts
   - `config/` sample input profiles for the wizard
@@ -26,7 +25,7 @@ It includes:
 - `artifacts/`
   - generated orchestration artifacts (runtime output)
 - `outputs/pbx-migration/`
-  - backward-compatibility links to canonical docs/scripts
+  - legacy compatibility links (primarily for script paths)
 
 ## Core Scripts
 
